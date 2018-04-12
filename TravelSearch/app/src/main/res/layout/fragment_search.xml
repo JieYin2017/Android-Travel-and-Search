@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/keywordLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_alignStart="@+id/keyword"
+        android:text="Keyword" />
+
+    <TextView
+        android:id="@+id/keywordError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keywordLabel"
+        android:layout_below="@+id/keywordLabel"
+        android:text="Please enter mandatory field"
+        android:textColor="#f44242"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/keyword"
+        android:layout_width="346dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/keywordError"
+        android:layout_centerHorizontal="true"
+        android:ems="10"
+        android:hint="Enter keyword"
+        android:inputType="text"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/categoryLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/keyword"
+        android:text="Category" />
+
+    <Spinner
+        android:id="@+id/category"
+        android:layout_width="346dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/categoryLabel"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:entries="@array/category_array" />
+
+    <TextView
+        android:id="@+id/distanceLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/category"
+        android:text="Distance(in miles)" />
+
+    <EditText
+        android:id="@+id/distance"
+        android:layout_width="346dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/distanceLabel"
+        android:ems="10"
+        android:hint="Enter distance(default 10 miles)"
+        android:inputType="number" />
+
+    <TextView
+        android:id="@+id/fromLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/distance"
+        android:text="From" />
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/fromButtonGroup"
+        android:layout_width="348dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/fromLabel"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/fromCurrent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/keyword"
+            android:layout_below="@+id/fromLabel"
+            android:checked="true"
+            android:text="Current location" />
+
+        <RadioButton
+            android:id="@+id/fromOther"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/keyword"
+            android:layout_below="@+id/fromCurrent"
+            android:checked="false"
+            android:text="Other. Specify Location" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/locationError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/fromButtonGroup"
+        android:text="Please enter mandatory field"
+        android:textColor="#f44242"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/location"
+        android:layout_width="313dp"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/keyword"
+        android:layout_below="@+id/locationError"
+        android:ems="10"
+        android:hint="Type in the Location"
+        android:focusable="false"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/searchButton"
+        android:layout_width="173dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/keyword"
+        android:layout_below="@+id/location"
+        android:text="SEARCH" />
+
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="173dp"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/keyword"
+        android:layout_alignTop="@+id/searchButton"
+        android:text="Clear" />
+
+
+</RelativeLayout>
