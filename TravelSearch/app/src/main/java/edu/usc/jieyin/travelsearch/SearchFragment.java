@@ -65,7 +65,9 @@ public class SearchFragment extends Fragment {
     }
     public void onPause() {
         super.onPause();
-        progress.dismiss();
+        if( progress != null){
+            progress.dismiss();
+        }
     }
 
     @Override

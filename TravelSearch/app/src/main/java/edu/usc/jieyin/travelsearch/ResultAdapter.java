@@ -1,6 +1,7 @@
 package edu.usc.jieyin.travelsearch;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ViewHolder
         public TextView place, address;
         public ImageView heart, category;
         public LinearLayout placeAddress;
+
         public ViewHolder(View view) {
             super(view);
             place = (TextView) view.findViewById(R.id.place);
@@ -60,47 +62,52 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ViewHolder
     // Create new views (invoked by the layout manager)
     @Override
     public ResultAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
-        // create a new view
-        View itemView = LayoutInflater.from(parent.getContext())
+                                                       int viewType) {
+        ViewHolder vh;
+        View itemView;
+
+        itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.result_list, parent, false);
 
-        ViewHolder vh = new ViewHolder(itemView);
+        vh = new ViewHolder(itemView);
+
+        // create a new view
+
         return vh;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        try {
-            JSONObject placeItem = results.getJSONObject(position);
+        if (getItemCount() != 0) {
+            try {
+                JSONObject placeItem = results.getJSONObject(position);
 
 
-            holder.place.setText(placeItem.getString("name"));
-            holder.address.setText(placeItem.getString("vicinity"));
-            boolean isFavorite = false;
-            for(int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
-                if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
-                        .equals(placeItem.getString("place_id"))) {
-                    isFavorite = true;
+                holder.place.setText(placeItem.getString("name"));
+                holder.address.setText(placeItem.getString("vicinity"));
+                boolean isFavorite = false;
+                for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
+                    if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
+                            .equals(placeItem.getString("place_id"))) {
+                        isFavorite = true;
+                    }
                 }
-            }
-            if(!isFavorite){
-                holder.heart.setImageResource(R.drawable.icon_heart_outline_black);
-                holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_outline_black));
-            }else{
-                holder.heart.setImageResource(R.drawable.icon_heart_fill_red);
-                holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_fill_red));
-            }
+                if (!isFavorite) {
+                    holder.heart.setImageResource(R.drawable.icon_heart_outline_black);
+                    holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_outline_black));
+                } else {
+                    holder.heart.setImageResource(R.drawable.icon_heart_fill_red);
+                    holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_fill_red));
+                }
 
-            Picasso.get().load(placeItem.getString("icon")).fit().into(holder.category);
-        } catch (JSONException e) {
-            e.printStackTrace();
+                Picasso.get().load(placeItem.getString("icon")).fit().into(holder.category);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)
