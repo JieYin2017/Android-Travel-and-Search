@@ -3,4 +3,6 @@
     <color name="colorPrimary">#02A084</color>
     <color name="colorPrimaryDark">#02A084</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="address">#999999</color>
+    <color name="place">#222222</color>
 </resources>

@@ -20,6 +20,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -105,6 +106,8 @@ public class SearchFragment extends Fragment {
 
                 if (!keyword.matches("\\s*\\S+.*")) {
                     keywordError.setVisibility(View.VISIBLE);
+                    Toast.makeText(getActivity(),
+                            "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
                 } else {
                     keywordError.setVisibility(View.GONE);
                     isValidForm = true;
@@ -114,6 +117,8 @@ public class SearchFragment extends Fragment {
                     if (!location.matches("\\s*\\S+.*")) {
                         locationError.setVisibility(View.VISIBLE);
                         isValidForm = false;
+                        Toast.makeText(getActivity(),
+                                "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
                     } else {
                         locationError.setVisibility(View.GONE);
                         isValidForm = true;
