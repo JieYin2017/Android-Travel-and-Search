@@ -1,5 +1,6 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.icu.text.IDNA;
 import android.support.design.widget.TabLayout;
@@ -42,6 +43,7 @@ public class DetailActivity extends AppCompatActivity {
     private ImageView shareButton;
     private ImageView favoriteButton;
     private DetailActivity.ViewPagerAdapter adapter;
+    private ProgressDialog progress;
     private int[] tabIcons = {
             R.drawable.icon_info_outline,
             R.drawable.icon_photo,
@@ -66,6 +68,7 @@ public class DetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager.setOffscreenPageLimit(3);
         addTabs(viewPager);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -88,6 +91,12 @@ public class DetailActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        progress = new ProgressDialog(DetailActivity.this);
+        progress.setMessage("Fetching details");
+        progress.setProgressStyle(ProgressDialog. STYLE_SPINNER);
+        progress.setIndeterminate(true);
+        progress.setProgress(0);
+        progress.show();
 
         fetchDetails();
     }
@@ -116,6 +125,11 @@ public class DetailActivity extends AppCompatActivity {
                             placeDetails = placeObj.getJSONObject("result");
                             InfoFragment infoFrag = (InfoFragment) adapter.getItem(0);
                             infoFrag.setInfo(placeDetails);
+                            PhotoFragment photoFrag = (PhotoFragment) adapter.getItem(1);
+                            photoFrag.setPhoto(placeID);
+                            if (progress != null){
+                                progress.dismiss();
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -126,6 +140,9 @@ public class DetailActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("placeDetails",error.getMessage());
+                        if (progress != null){
+                            progress.dismiss();
+                        }
                     }
                 });
         queue.add(nextPageRequest);
