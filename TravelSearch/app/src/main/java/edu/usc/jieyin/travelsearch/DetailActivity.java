@@ -26,14 +26,19 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
-    public static JSONObject placeDetails;
+    private JSONObject placeDetails;
+    private JSONArray yelpReview = new JSONArray();
+    private JSONArray googleReview = new JSONArray();
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private JSONObject placeJSON;
@@ -44,6 +49,8 @@ public class DetailActivity extends AppCompatActivity {
     private ImageView favoriteButton;
     private DetailActivity.ViewPagerAdapter adapter;
     private ProgressDialog progress;
+    private RequestQueue queue;
+
     private int[] tabIcons = {
             R.drawable.icon_info_outline,
             R.drawable.icon_photo,
@@ -112,8 +119,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void fetchDetails(){
-        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-
+        queue = Volley.newRequestQueue(getApplicationContext());
         String detailURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/details/?placeID=" + placeID;
         Log.d("placeDetails",detailURL);
         StringRequest nextPageRequest = new StringRequest(Request.Method.GET, detailURL,
@@ -123,16 +129,12 @@ public class DetailActivity extends AppCompatActivity {
                         try {
                             JSONObject placeObj = new JSONObject(response);
                             placeDetails = placeObj.getJSONObject("result");
-                            InfoFragment infoFrag = (InfoFragment) adapter.getItem(0);
-                            infoFrag.setInfo(placeDetails);
-                            PhotoFragment photoFrag = (PhotoFragment) adapter.getItem(1);
-                            photoFrag.setPhoto(placeID);
-                            if (progress != null){
-                                progress.dismiss();
-                            }
+                            googleReview = placeDetails.getJSONArray("reviews");
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                        }finally {
+                            fetchYelp(placeDetails);
                         }
                     }
                 },
@@ -200,6 +202,85 @@ public class DetailActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
         }
+    }
+
+    private void fetchYelp(JSONObject currPlace){
+        JSONArray addressComponents;
+        JSONObject addressItem;
+        String type, formattedAdd, placeName, yelpURL;
+        String city_name = "";
+        String state_name = "";
+        String country_name = "";
+        String postal_code = "";
+        try {
+
+            formattedAdd = URLEncoder.encode(currPlace.getString("formatted_address"),"UTF-8");
+            placeName = URLEncoder.encode(currPlace.getString("name"),"UTF-8");
+
+            addressComponents = currPlace.getJSONArray("address_components");
+            for(int i = 0; i < addressComponents.length(); i++){
+                addressItem = addressComponents.getJSONObject(i);
+                type = addressItem.getJSONArray("types").getString(0);
+                if(type.equals("locality")){
+                    city_name = URLEncoder.encode(addressItem.getString("long_name"),"UTF-8");
+                }
+                if(type.equals("administrative_area_level_1")){
+                    state_name = addressItem.getString("short_name");
+                }
+                if(type.equals("country")){
+                    country_name = addressItem.getString("short_name");
+                }
+                if(type.equals("postal_code")){
+                    postal_code = addressItem.getString("long_name");
+                }
+            }
+            yelpURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/yelp?name=" + placeName +"&city=" + city_name +
+                    "&state=" + state_name + "&country=" + country_name + "&address1=" + formattedAdd + "&postal_code=" + postal_code;
+            Log.d("yelpURL", yelpURL);
+
+
+            StringRequest yelpRequest = new StringRequest(Request.Method.GET, yelpURL,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.d("yelpResult", "succssfully");
+                            Log.d("yelpResult", response);
+                            if(!response.equals("failed")){
+                                try {
+                                    yelpReview = new JSONObject(response).getJSONArray("reviews");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("placeDetails",error.getMessage());
+                            if (progress != null){
+                                progress.dismiss();
+                            }
+                        }
+                    });
+            queue.add(yelpRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }catch (UnsupportedEncodingException e){
+            e.printStackTrace();
+        }finally {
+            InfoFragment infoFrag = (InfoFragment) adapter.getItem(0);
+            infoFrag.setInfo(placeDetails);
+            PhotoFragment photoFrag = (PhotoFragment) adapter.getItem(1);
+            photoFrag.setPhoto(placeID);
+            ReviewFragment reviewFrag = (ReviewFragment) adapter.getItem(3);
+            reviewFrag.getReviews(googleReview, yelpReview);
+            if (progress != null){
+                progress.dismiss();
+            }
+        }
+
     }
 }
 

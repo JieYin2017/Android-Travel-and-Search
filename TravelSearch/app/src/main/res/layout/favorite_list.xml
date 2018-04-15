@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="horizontal"
+    android:paddingBottom="@dimen/row_padding_vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/row_padding_vertical">
+
+    <ImageView
+        android:id="@+id/category_icon_favorite"
+        android:layout_alignParentRight="true"
+        android:layout_width="60dp"
+        android:layout_height="match_parent">
+    </ImageView>
+    <LinearLayout
+        android:id="@+id/placeAddress_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="10dp"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/place_favorite"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:textColor="@color/place"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/address_favorite"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/place_favorite"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/heart_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="20dp"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/icon_heart_fill_red"/>
+
+</LinearLayout>
+
+

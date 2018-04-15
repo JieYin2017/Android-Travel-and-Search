@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="horizontal"
+    android:paddingBottom="@dimen/row_padding_vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/row_padding_vertical">
+
+    <ImageView
+        android:id="@+id/userIcon"
+        android:layout_alignParentRight="true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center">
+    </ImageView>
+    <RelativeLayout
+        android:id="@+id/reviewDetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp">
+        <TextView
+            android:id="@+id/userName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:textColor="#02A084"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:text="Sunny S." />
+
+        <RatingBar
+            android:id="@+id/reviewRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/userName"
+            style="?android:attr/ratingBarStyleSmall"
+            android:numStars="5"
+            android:isIndicator="true"/>
+        <TextView
+            android:id="@+id/reviewTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/reviewRating"
+            android:text="2017-12-22 19:17:07"/>
+        <TextView
+            android:id="@+id/reviewContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/reviewTime"
+            android:text="Any chance I can give a 0 Star? Apparently this is not the first time this Starbucks did this to the customers, who holds a voucher given by the airline due..."/>
+    </RelativeLayout>
+
+
+</LinearLayout>

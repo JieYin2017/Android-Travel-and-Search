@@ -41,7 +41,7 @@ public class FavoriteFragment extends Fragment {
         fRecyclerView = (RecyclerView) view.findViewById(R.id.favoriteRecycle);
         fLayoutManager = new LinearLayoutManager(getContext());
         fRecyclerView.setLayoutManager(fLayoutManager);
-        fAdapter = new ResultAdapter(favoriteItems, new ResultAdapterListener() {
+        fAdapter = new FavoriteAdapter(favoriteItems, new ResultAdapterListener() {
             @Override
             public void iconTextViewOnClick(View v, int position) {
                 Log.d("TEXT-CLICK","TEXT-CLICK FROM FAVORITE FRAGMENT");
