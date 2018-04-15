@@ -1,5 +1,6 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,10 +15,19 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
+
+import java.util.List;
+
 
 public class NearbyActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
@@ -29,6 +39,7 @@ public class NearbyActivity extends AppCompatActivity {
     private Button nextPage;
     private Button previous;
     private JSONArray pages [] = new JSONArray[3];
+    private ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +48,8 @@ public class NearbyActivity extends AppCompatActivity {
 
         nextPage = findViewById(R.id.next);
         previous = findViewById(R.id.previous);
+        nextPage.setOnClickListener(nextListener);
+        previous.setOnClickListener(previousListener);
         //Initialize toolbar
         Toolbar mToolbar = (Toolbar)findViewById(R.id.resultToolBar);
         mToolbar.setTitle("Search results");
@@ -44,11 +57,12 @@ public class NearbyActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
+
         //getJSON
         Intent intent = getIntent();
         String nearbyString = intent.getStringExtra("PlaceNearby");
         try {
-            JSONObject jsonObject = new JSONObject(nearbyString);
+            final JSONObject jsonObject = new JSONObject(nearbyString);
 
             if(jsonObject.has("next_page_token")){
                 nextPage.setEnabled(true);
@@ -57,7 +71,11 @@ public class NearbyActivity extends AppCompatActivity {
             results = jsonObject.getJSONArray("results");
             viewSelector(results);
 
-            pages[0] = results;
+            pages[page] = new JSONArray();
+            for(int i = 0; i < results.length(); i++){
+                pages[page].put(results.getJSONObject(i));
+            }
+
 
             mRecyclerView = (RecyclerView) findViewById(R.id.resultRecycler);
             // use a linear layout manager
@@ -65,11 +83,18 @@ public class NearbyActivity extends AppCompatActivity {
             mRecyclerView.setLayoutManager(mLayoutManager);
 
             // specify an adapter (see also next example)
-            mAdapter = new ResultAdapter(pages[0], new ResultAdapterListener() {
+            mAdapter = new ResultAdapter(results, new ResultAdapterListener() {
 
                 @Override
                 public void iconTextViewOnClick(View v, int position) {
                     Log.d("TEXT-CLICK","TEXT-CLICK FROM NEARY BY ACTIVITY");
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    try {
+                        intent.putExtra("PlaceDetail",results.getJSONObject(position).toString());
+                        startActivity(intent);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
 
                 }
@@ -122,6 +147,7 @@ public class NearbyActivity extends AppCompatActivity {
         }
 
     }
+
     private void viewSelector(JSONArray results){
         mRecyclerView = findViewById(R.id.resultRecycler);
         emptyView = findViewById(R.id.noRecord);
@@ -138,13 +164,99 @@ public class NearbyActivity extends AppCompatActivity {
     }
 
 
+
+    View.OnClickListener nextListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            progress = new ProgressDialog(NearbyActivity.this);
+            progress.setMessage("Fetching next page");
+            progress.setProgressStyle(ProgressDialog. STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+
+            RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+            int actualPageRequest = page + 2;
+            String pageURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/page" + actualPageRequest;
+            Log.d("nextPage",pageURL);
+            StringRequest nextPageRequest = new StringRequest(Request.Method.GET, pageURL,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            try {
+                                JSONObject nextPageJSON = new JSONObject(response);
+                                page += 1;
+                                pages[page] = nextPageJSON.getJSONArray("results");
+                                Log.d("current page Number", page+ " ");
+                                while(results.length()!=0){
+                                    results.remove(0);
+                                }
+                                for(int i = 0; i < pages[page].length(); i++){
+                                    results.put(pages[page].getJSONObject(i));
+                                }
+                                mAdapter.notifyDataSetChanged();
+                                if(nextPageJSON.has("next_page_token")){
+                                    nextPage.setEnabled(true);
+                                }else{
+                                    nextPage.setEnabled(false);
+                                }
+                                if(page != 0){
+                                    previous.setEnabled(true);
+                                }else{
+                                    previous.setEnabled(false);
+                                }
+                                if(progress != null){
+                                    progress.dismiss();
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("nextPageError",error.getMessage());
+                            if(progress != null){
+                                progress.dismiss();
+                            }
+                        }
+                    });
+            queue.add(nextPageRequest);
+        }
+    };
+
     View.OnClickListener previousListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
+            page--;
             if(page != 0){
                 previous.setEnabled(true);
+            }else{
+                previous.setEnabled(false);
             }
+            nextPage.setEnabled(true);
+            while (results.length() != 0) {
+                results.remove(0);
+            }
+            for (int i = 0; i < pages[page].length(); i++) {
+                try {
+                    results.put(pages[page].getJSONObject(i));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d("current Page", page + "");
+            Log.d("current Page Len", pages[page].length() + "");
+            mAdapter.notifyDataSetChanged();
         }
     };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 }
