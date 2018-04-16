@@ -3,6 +3,7 @@ package edu.usc.jieyin.travelsearch;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.icu.text.IDNA;
+import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -42,7 +44,7 @@ public class DetailActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private JSONObject placeJSON;
-    private String placeName;
+
     private String placeID;
     private boolean isFavorite = false;
     private ImageView shareButton;
@@ -50,6 +52,11 @@ public class DetailActivity extends AppCompatActivity {
     private DetailActivity.ViewPagerAdapter adapter;
     private ProgressDialog progress;
     private RequestQueue queue;
+
+    private String placeName;
+    private String formattedAddress = "";
+    private String website = "unavailable";
+
 
     private int[] tabIcons = {
             R.drawable.icon_info_outline,
@@ -115,8 +122,80 @@ public class DetailActivity extends AppCompatActivity {
         placeNameView.setText(placeName);
         if (isFavorite) {
             favoriteButton.setImageResource(R.drawable.icon_heart_fill_white);
+            favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_fill_white));
+            ;
+        } else {
+            favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_outline_white));
+            ;
         }
     }
+
+    private void setShareFavorite() {
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    formattedAddress = placeDetails.getString("formatted_address");
+                    website = placeDetails.getString("website");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    String twitterContent = "Check out " + placeName
+                            + " locate at " + formattedAddress
+                            + ". Website: " + website + "\n";
+
+                    String twitterURL = null;
+                    try {
+                        twitterURL = "https://twitter.com/intent/tweet?text=" + URLEncoder.encode(twitterContent, "UTF-8") + "&hashtags=TravelAndEntertainmentSearch";
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    Intent twitterIntent = new Intent(Intent.ACTION_VIEW);
+                    twitterIntent.setData(Uri.parse(twitterURL));
+                    startActivity(twitterIntent);
+                }
+
+            }
+        });
+
+        favoriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Integer.valueOf(R.drawable.icon_heart_outline_white).equals(favoriteButton.getTag())) {
+                    favoriteButton.setImageResource(R.drawable.icon_heart_fill_white);
+                    favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_fill_white));
+
+                    Toast.makeText(getApplicationContext(),
+                            placeName + " was added to favorites",
+                            Toast.LENGTH_SHORT).show();
+                    FavoriteFragment.favoriteItems.put(placeDetails);
+                    FavoriteFragment.fAdapter.notifyDataSetChanged();
+                    FavoriteFragment.viewSelector();
+
+                } else {
+                    favoriteButton.setImageResource(R.drawable.icon_heart_outline_white);
+                    favoriteButton.setTag(R.drawable.icon_heart_outline_white);
+                    try {
+                        Toast.makeText(getApplicationContext(),
+                                placeName + " was removed from favorites",
+                                Toast.LENGTH_SHORT).show();
+                        for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
+                            if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
+                                    .equals(placeDetails.getString("place_id"))) {
+                                FavoriteFragment.favoriteItems.remove(i);
+                                FavoriteFragment.fAdapter.notifyDataSetChanged();
+                                FavoriteFragment.viewSelector();
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+    }
+
 
     private void fetchDetails() {
         queue = Volley.newRequestQueue(getApplicationContext());
@@ -129,6 +208,7 @@ public class DetailActivity extends AppCompatActivity {
                         try {
                             JSONObject placeObj = new JSONObject(response);
                             placeDetails = placeObj.getJSONObject("result");
+                            setShareFavorite();
                             googleReview = placeDetails.getJSONArray("reviews");
 
                         } catch (JSONException e) {
