@@ -78,17 +78,19 @@ public class ReviewFragment extends Fragment {
 
             }
         });
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(tempAdapter);
 
 
         // Inflate the layout for this fragment
         return view;
     }
 
-    public void getReviews(final JSONArray googleReview, final JSONArray yelpReview) {
+    public void getReviews(JSONArray googleReview, JSONArray yelpReview) {
 
         this.googleReview = googleReview;
         this.yelpReview = yelpReview;
+        Log.d("Review","Google Review Length: " + googleReview.length());
+        Log.d("Review","Yelp Review Length: " + yelpReview.length());
         setReviews();
     }
 

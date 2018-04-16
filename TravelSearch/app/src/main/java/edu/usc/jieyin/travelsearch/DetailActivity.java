@@ -304,10 +304,10 @@ public class DetailActivity extends AppCompatActivity {
                     city_name = URLEncoder.encode(addressItem.getString("long_name"), "UTF-8");
                 }
                 if (type.equals("administrative_area_level_1")) {
-                    state_name = URLEncoder.encode(addressItem.getString("short_name"),"UTF-8");
+                    state_name = URLEncoder.encode(addressItem.getString("short_name"), "UTF-8");
                 }
                 if (type.equals("country")) {
-                    country_name = URLEncoder.encode(addressItem.getString("short_name"),"UTF-8");
+                    country_name = URLEncoder.encode(addressItem.getString("short_name"), "UTF-8");
                 }
                 if (type.equals("postal_code")) {
                     postal_code = addressItem.getString("long_name");
@@ -329,14 +329,13 @@ public class DetailActivity extends AppCompatActivity {
                                     Log.d("yelpResult", "response length: " + yelpReview.length());
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                } finally {
-                                    ReviewFragment reviewFrag = (ReviewFragment) adapter.getItem(3);
-                                    reviewFrag.getReviews(googleReview, yelpReview);
-                                    MapFragment mapFrag = (MapFragment) adapter.getItem(2);
-                                    mapFrag.setDestLoc(placeDetails);
-                                    Log.d("ReviewLength", "GoogleReview: " + googleReview.length() + " yelpReview: " + yelpReview.length());
                                 }
                             }
+                            MapFragment mapFrag = (MapFragment) adapter.getItem(2);
+                            mapFrag.setDestLoc(placeDetails);
+                            ReviewFragment reviewFrag = (ReviewFragment) adapter.getItem(3);
+                            reviewFrag.getReviews(googleReview, yelpReview);
+                            Log.d("ReviewLength", "GoogleReview: " + googleReview.length() + " yelpReview: " + yelpReview.length());
                         }
                     },
                     new Response.ErrorListener() {

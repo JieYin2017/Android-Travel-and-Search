@@ -73,8 +73,8 @@ public class MapFragment extends Fragment {
                     mMap.setMyLocationEnabled(true);
                     LatLng dest = new LatLng(destLat, destLon);
                     mMap.addMarker(new MarkerOptions().position(dest)
-                            .title(placeName));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(dest));
+                            .title(placeName)).showInfoWindow();
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(dest,15.0f));
                 }
             });
         } catch (JSONException e) {
