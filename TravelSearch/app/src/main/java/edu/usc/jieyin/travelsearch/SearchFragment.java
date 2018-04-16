@@ -51,6 +51,13 @@ public class SearchFragment extends Fragment {
     private FusedLocationProviderClient mFusedLocationClient;
     private ProgressDialog progress;
 
+    private EditText editKeyword, editLocation, editDistance;
+    private TextView keywordError, locationError;
+    private RadioButton otherLocRadio, currentLocRadio;
+    private Button searchButton, clearButton;
+    private Spinner categorySpinner;
+
+
     public SearchFragment() {
         // Required empty public constructor
     }
@@ -90,70 +97,21 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        Button searchButton = view.findViewById(R.id.searchButton);
-        searchButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isValidForm = false;
 
-                EditText editKeyword = (EditText) view.findViewById(R.id.keyword);
-                String keyword = editKeyword.getText().toString();
+        editKeyword = (EditText) view.findViewById(R.id.keyword);
+        otherLocRadio = (RadioButton) view.findViewById(R.id.fromOther);
+        keywordError = (TextView) view.findViewById(R.id.keywordError);
+        editLocation = (EditText) view.findViewById(R.id.location);
+        locationError = (TextView) view.findViewById(R.id.locationError);
+        categorySpinner = (Spinner) view.findViewById(R.id.category);
+        editDistance = (EditText) view.findViewById(R.id.distance);
+        currentLocRadio = (RadioButton) view.findViewById(R.id.fromCurrent);
 
-                RadioButton otherLocRadio = (RadioButton) view.findViewById(R.id.fromOther);
+        searchButton = view.findViewById(R.id.searchButton);
+        clearButton = view.findViewById(R.id.clearButton);
 
-                TextView keywordError = (TextView) view.findViewById(R.id.keywordError);
-
-                EditText editLocation = (EditText) view.findViewById(R.id.location);
-                String location = editLocation.getText().toString();
-
-                if (!keyword.matches("\\s*\\S+.*")) {
-                    keywordError.setVisibility(View.VISIBLE);
-                    Toast.makeText(getActivity(),
-                            "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
-                } else {
-                    keywordError.setVisibility(View.GONE);
-                    isValidForm = true;
-                }
-                if (otherLocRadio.isChecked()) {
-                    TextView locationError = (TextView) view.findViewById(R.id.locationError);
-                    if (!location.matches("\\s*\\S+.*")) {
-                        locationError.setVisibility(View.VISIBLE);
-                        isValidForm = false;
-                        Toast.makeText(getActivity(),
-                                "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
-                    } else {
-                        locationError.setVisibility(View.GONE);
-                        isValidForm = true;
-                    }
-                }
-                if (isValidForm) {
-                    int distance;
-                    Spinner categorySpinner = (Spinner) view.findViewById(R.id.category);
-                    String category = categorySpinner.getSelectedItem().toString();
-                    EditText editDistance = (EditText) view.findViewById(R.id.distance);
-
-                    if (editDistance.getText().toString().equals("")) {
-                        distance = 10;
-                    } else {
-                        distance = Integer.parseInt(editDistance.getText().toString());
-                    }
-                    progress = new ProgressDialog(getContext());
-                    progress.setMessage("Fetching Results");
-                    progress.setProgressStyle(ProgressDialog. STYLE_SPINNER);
-                    progress.setIndeterminate(true);
-                    progress.setProgress(0);
-                    progress.show();
-                    if (!otherLocRadio.isChecked()) {
-                        nearbyQuery(keyword, category, distance, "");
-                    } else {
-                        nearbyQuery(keyword, category, distance, location);
-                    }
-
-                }
-
-            }
-        });
-
+        setSearchButton();
+        setClearButton();
         return view;
     }
 
@@ -268,5 +226,78 @@ public class SearchFragment extends Fragment {
 
         queue.add(nearbyRequest);
     }
+
+    private void setSearchButton(){
+        searchButton.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isValidForm = false;
+
+                String keyword = editKeyword.getText().toString();
+                String location = editLocation.getText().toString();
+
+                if (!keyword.matches("\\s*\\S+.*")) {
+                    keywordError.setVisibility(View.VISIBLE);
+                    Toast.makeText(getActivity(),
+                            "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
+                } else {
+                    keywordError.setVisibility(View.GONE);
+                    isValidForm = true;
+                }
+                if (otherLocRadio.isChecked()) {
+                    if (!location.matches("\\s*\\S+.*")) {
+                        locationError.setVisibility(View.VISIBLE);
+                        isValidForm = false;
+                        Toast.makeText(getActivity(),
+                                "Please fix all fields with errors", Toast.LENGTH_SHORT).show();
+                    } else {
+                        locationError.setVisibility(View.GONE);
+                        isValidForm = true;
+                    }
+                }
+                if (isValidForm) {
+                    int distance;
+                    String category = categorySpinner.getSelectedItem().toString();
+
+                    if (editDistance.getText().toString().equals("")) {
+                        distance = 10;
+                    } else {
+                        distance = Integer.parseInt(editDistance.getText().toString());
+                    }
+                    progress = new ProgressDialog(getContext());
+                    progress.setMessage("Fetching Results");
+                    progress.setProgressStyle(ProgressDialog. STYLE_SPINNER);
+                    progress.setIndeterminate(true);
+                    progress.setProgress(0);
+                    progress.show();
+                    if (!otherLocRadio.isChecked()) {
+                        nearbyQuery(keyword, category, distance, "");
+                    } else {
+                        nearbyQuery(keyword, category, distance, location);
+                    }
+                }
+
+            }
+        });
+
+
+    }
+
+    private void setClearButton(){
+        clearButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                editKeyword.setText("");
+                editDistance.setText("");
+                editLocation.setText("");
+                locationError.setVisibility(View.GONE);
+                keywordError.setVisibility(View.GONE);
+                categorySpinner.setSelection(0);
+                otherLocRadio.setChecked(false);
+                currentLocRadio.setChecked(true);
+            }
+        });
+    }
+
 }
 

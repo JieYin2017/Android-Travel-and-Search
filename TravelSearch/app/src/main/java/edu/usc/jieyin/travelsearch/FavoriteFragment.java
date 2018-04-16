@@ -1,5 +1,6 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,6 +46,13 @@ public class FavoriteFragment extends Fragment {
             @Override
             public void iconTextViewOnClick(View v, int position) {
                 Log.d("TEXT-CLICK","TEXT-CLICK FROM FAVORITE FRAGMENT");
+                Intent intent = new Intent(getContext(), DetailActivity.class);
+                try {
+                    intent.putExtra("PlaceDetail",favoriteItems.getJSONObject(position).toString());
+                    startActivity(intent);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override

@@ -1,6 +1,8 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -69,10 +71,11 @@ public class ReviewFragment extends Fragment {
 
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new ReviewAdapter(reviewToUpdate, new ReviewAdapter.ReviewAdapterListener() {
+        RecyclerView.Adapter tempAdapter = new ReviewAdapter(reviewToUpdate, new ReviewAdapter.ReviewAdapterListener() {
             @Override
             public void iconTextViewOnClick(View v, int position) {
-                RelativeLayout reviewBar = v.findViewById(R.id.reviewDetail);
+                Log.d("tempAdapter", "Initialization");
+
             }
         });
         mRecyclerView.setAdapter(mAdapter);
@@ -82,9 +85,11 @@ public class ReviewFragment extends Fragment {
         return view;
     }
 
-    public void getReviews(JSONArray googleReview, JSONArray yelpReview) {
+    public void getReviews(final JSONArray googleReview, final JSONArray yelpReview) {
+
         this.googleReview = googleReview;
         this.yelpReview = yelpReview;
+
         setReviews();
     }
 
@@ -105,7 +110,8 @@ public class ReviewFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    mAdapter.notifyDataSetChanged();
+                    //mAdapter.notifyDataSetChanged();
+                    updateAdapter();
                 }
             } else {
                 if (yelpReview.length() == 0) {
@@ -121,7 +127,8 @@ public class ReviewFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    mAdapter.notifyDataSetChanged();
+                    //mAdapter.notifyDataSetChanged();
+                    updateAdapter();
                 }
             }
         } else {
@@ -139,7 +146,8 @@ public class ReviewFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    mAdapter.notifyDataSetChanged();
+                    updateAdapter();
+                    //mAdapter.notifyDataSetChanged();
                 }
             } else {
                 if (yrToSort.length() == 0) {
@@ -155,7 +163,8 @@ public class ReviewFragment extends Fragment {
                             e.printStackTrace();
                         }
                     }
-                    mAdapter.notifyDataSetChanged();
+                    //mAdapter.notifyDataSetChanged();
+                    updateAdapter();
                 }
             }
         }
@@ -438,5 +447,26 @@ public class ReviewFragment extends Fragment {
         }
     }
 
+    private void updateAdapter(){
+        mAdapter = new ReviewAdapter(reviewToUpdate, new ReviewAdapter.ReviewAdapterListener() {
+            @Override
+            public void iconTextViewOnClick(View v, int position) {
+                String reviewURL = "";
+                try {
+                    if (isYelp) {
+                        reviewURL = reviewToUpdate.getJSONObject(position).getString("url");
+                    }
+                    else{
+                        reviewURL = reviewToUpdate.getJSONObject(position).getString("author_url");
+                    }}catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Intent openReivew = new Intent(Intent.ACTION_VIEW);
+                openReivew.setData(Uri.parse(reviewURL));
+                startActivity(openReivew);
+            }
+        });
+        mRecyclerView.swapAdapter(mAdapter,false);
+    }
 
 }
