@@ -1,5 +1,7 @@
 package edu.usc.jieyin.travelsearch;
-
+/**
+ * AutoComplete part is borrowed from http://www.zoftino.com/google-places-auto-complete-android
+ */
 
 import android.Manifest;
 import android.app.ProgressDialog;
@@ -14,6 +16,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -36,7 +40,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import org.json.JSONArray;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -51,7 +54,8 @@ public class SearchFragment extends Fragment {
     private FusedLocationProviderClient mFusedLocationClient;
     private ProgressDialog progress;
 
-    private EditText editKeyword, editLocation, editDistance;
+    private EditText editKeyword, editDistance;
+    private AutoCompleteTextView editLocation;
     private TextView keywordError, locationError;
     private RadioButton otherLocRadio, currentLocRadio;
     private Button searchButton, clearButton;
@@ -101,17 +105,18 @@ public class SearchFragment extends Fragment {
         editKeyword = (EditText) view.findViewById(R.id.keyword);
         otherLocRadio = (RadioButton) view.findViewById(R.id.fromOther);
         keywordError = (TextView) view.findViewById(R.id.keywordError);
-        editLocation = (EditText) view.findViewById(R.id.location);
         locationError = (TextView) view.findViewById(R.id.locationError);
         categorySpinner = (Spinner) view.findViewById(R.id.category);
         editDistance = (EditText) view.findViewById(R.id.distance);
         currentLocRadio = (RadioButton) view.findViewById(R.id.fromCurrent);
+        editLocation = (AutoCompleteTextView) view.findViewById(R.id.location);
 
         searchButton = view.findViewById(R.id.searchButton);
         clearButton = view.findViewById(R.id.clearButton);
 
         setSearchButton();
         setClearButton();
+        setAutoComplete();
         return view;
     }
 
@@ -297,6 +302,25 @@ public class SearchFragment extends Fragment {
                 currentLocRadio.setChecked(true);
             }
         });
+    }
+    private void setAutoComplete(){
+        CustomAutoCompleteAdapter adapter =  new CustomAutoCompleteAdapter(getContext());
+        AdapterView.OnItemClickListener onItemClickListener =
+                new AdapterView.OnItemClickListener(){
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                        Toast.makeText(getContext(),
+                                "selected place "
+                                        + ((Place)(adapterView.
+                                        getItemAtPosition(i))).getPlaceText()
+                                , Toast.LENGTH_SHORT).show();
+                        //do something with the selection
+
+                    }
+                };
+        editLocation.setAdapter(adapter);
+        editLocation.setOnItemClickListener(onItemClickListener);
     }
 
 }

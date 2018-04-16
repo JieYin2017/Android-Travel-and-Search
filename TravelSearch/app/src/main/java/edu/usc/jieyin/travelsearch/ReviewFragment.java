@@ -89,7 +89,6 @@ public class ReviewFragment extends Fragment {
 
         this.googleReview = googleReview;
         this.yelpReview = yelpReview;
-
         setReviews();
     }
 

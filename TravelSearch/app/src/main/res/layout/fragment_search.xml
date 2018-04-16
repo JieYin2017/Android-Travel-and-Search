@@ -115,7 +115,7 @@
         android:textColor="#f44242"
         android:visibility="gone" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/location"
         android:layout_width="313dp"
         android:layout_height="wrap_content"
