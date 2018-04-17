@@ -2,6 +2,8 @@ package edu.usc.jieyin.travelsearch;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -73,6 +75,7 @@ public class MapFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+
         travelModeSpinner = view.findViewById(R.id.travelModeSpinner);
         fromAutoComplete = view.findViewById(R.id.fromAutoComplete);
         setAutoComplete();
@@ -131,34 +134,43 @@ public class MapFragment extends Fragment {
         String travelMode = travelModeSpinner.getSelectedItem().toString();
         fromPlace = fromAutoComplete.getText().toString();
 
-        RequestQueue queue = Volley.newRequestQueue(getContext());
-        try {
-            routeURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/routes/?from=" + URLEncoder.encode(fromPlace, "UTF-8")
-                    + "&dest=" + URLEncoder.encode(placeName, "UTF-8") + "&mode=" +travelMode.toLowerCase();
-            Log.d("ROUTE",routeURL);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        StringRequest routeRequest = new StringRequest(Request.Method.GET, routeURL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONObject routeObject = new JSONObject(response);
-                            initializeRouteArray(routeObject);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        if (!fromPlace.matches("\\s*\\S+.*")) {
+            Toast.makeText(getContext(),
+                    "Please enter or select a valid place first",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            RequestQueue queue = Volley.newRequestQueue(getContext());
+            try {
+                routeURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/routes/?from=" + URLEncoder.encode(fromPlace, "UTF-8")
+                        + "&dest=" + URLEncoder.encode(placeName, "UTF-8") + "&mode=" + travelMode.toLowerCase();
+                Log.d("ROUTE", routeURL);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            StringRequest routeRequest = new StringRequest(Request.Method.GET, routeURL,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            try {
+                                JSONObject routeObject = new JSONObject(response);
+                                initializeRouteArray(routeObject);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("routeError", error.getMessage());
-                    }
-                });
-        routeRequest.setShouldCache(false);
-        queue.add(routeRequest);
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Log.d("routeError", error.getMessage());
+                            Toast.makeText(getContext(),
+                                    "ERROR: please check your network and retry",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            routeRequest.setShouldCache(false);
+            queue.add(routeRequest);
+        }
     }
 
 
@@ -173,7 +185,14 @@ public class MapFragment extends Fragment {
                 lons.add(lon.getDouble(i));
             }
             Log.d("ROUTE", "" + lats.size() + travelModeSpinner.getSelectedItem().toString());
-            updateMap();
+            if (lats.size() == 0) {
+                Toast.makeText(getContext(),
+                        "Sorry, we cannot provide any direction based on your provided location",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                updateMap();
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -202,7 +221,7 @@ public class MapFragment extends Fragment {
 
         Log.d("MAP_COOR", "southwest" + south + west + "  northeast" + north + east);
         LatLngBounds routeBound = new LatLngBounds(
-                new LatLng(west,south), new LatLng(east, north));
+                new LatLng(west, south), new LatLng(east, north));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(routeBound, (int) (30 * getResources().getDisplayMetrics().density)));
         mMap.addMarker(new MarkerOptions().position(new LatLng(lats.get(lats.size() - 1), lons.get(lons.size() - 1)))
@@ -215,11 +234,12 @@ public class MapFragment extends Fragment {
         travelModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                if(++check > 1){
+                if (++check > 1) {
                     Log.d("TravelModeSpinner", travelModeSpinner.getSelectedItem().toString());
                     updatePath();
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 return;

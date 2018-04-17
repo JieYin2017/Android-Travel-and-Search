@@ -1,6 +1,8 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -50,6 +52,8 @@ public class NearbyActivity extends AppCompatActivity {
         previous = findViewById(R.id.previous);
         nextPage.setOnClickListener(nextListener);
         previous.setOnClickListener(previousListener);
+
+
         //Initialize toolbar
         Toolbar mToolbar = (Toolbar)findViewById(R.id.resultToolBar);
         mToolbar.setTitle("Search results");
@@ -61,89 +65,95 @@ public class NearbyActivity extends AppCompatActivity {
         //getJSON
         Intent intent = getIntent();
         String nearbyString = intent.getStringExtra("PlaceNearby");
-        try {
-            final JSONObject jsonObject = new JSONObject(nearbyString);
-
-            if(jsonObject.has("next_page_token")){
-                nextPage.setEnabled(true);
-            }
-
-            results = jsonObject.getJSONArray("results");
-            viewSelector(results);
-
-            pages[page] = new JSONArray();
-            for(int i = 0; i < results.length(); i++){
-                pages[page].put(results.getJSONObject(i));
-            }
-
-
-            mRecyclerView = (RecyclerView) findViewById(R.id.resultRecycler);
-            // use a linear layout manager
-            mLayoutManager = new LinearLayoutManager(this);
-            mRecyclerView.setLayoutManager(mLayoutManager);
-
-            // specify an adapter (see also next example)
-            mAdapter = new ResultAdapter(results, new ResultAdapterListener() {
-
-                @Override
-                public void iconTextViewOnClick(View v, int position) {
-                    Log.d("TEXT-CLICK","TEXT-CLICK FROM NEARY BY ACTIVITY");
-                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                    try {
-                        intent.putExtra("PlaceDetail",results.getJSONObject(position).toString());
-                        startActivity(intent);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void iconImageViewOnClick(View v, int position) {
-                    ImageView heart = (ImageView) v.findViewById(R.id.heart);
-
-                    if(Integer.valueOf(R.drawable.icon_heart_outline_black).equals(heart.getTag())){
-                        heart.setImageResource(R.drawable.icon_heart_fill_red);
-                        heart.setTag(Integer.valueOf(R.drawable.icon_heart_fill_red));
-                        try {
-                            Toast.makeText(getApplicationContext(),
-                                    pages[page].getJSONObject(position).getString("name") + " was added to favorites",
-                                    Toast.LENGTH_SHORT).show();
-                            FavoriteFragment.favoriteItems.put(pages[page].getJSONObject(position));
-                            FavoriteFragment.fAdapter.notifyDataSetChanged();
-                            FavoriteFragment.viewSelector();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }else{
-                        heart.setImageResource(R.drawable.icon_heart_outline_black);
-                        heart.setTag(Integer.valueOf(R.drawable.icon_heart_outline_black));
-                        try {
-                            Toast.makeText(getApplicationContext(),
-                                    pages[page].getJSONObject(position).getString("name") + " was removed from favorites",
-                                    Toast.LENGTH_SHORT).show();
-                            for(int i = 0; i < FavoriteFragment.favoriteItems.length(); i++){
-                                if(FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
-                                        .equals(pages[page].getJSONObject(position).getString("place_id"))){
-                                    FavoriteFragment.favoriteItems.remove(i);
-                                    FavoriteFragment.fAdapter.notifyDataSetChanged();
-                                    FavoriteFragment.viewSelector();
-                                }
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Log.d("LENGTH OF FAVORITE --", "" + FavoriteFragment.favoriteItems.length());
-                }
-            });
-            mRecyclerView.setAdapter(mAdapter);
-
-
-            Log.d("results length", Integer.toString(pages[page].length()));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if(nearbyString.equals("FAILED")){
+            Toast.makeText(NearbyActivity.this,
+                    "There may be an error with your network",
+                    Toast.LENGTH_SHORT).show();
         }
+        else {
+            try {
+                final JSONObject jsonObject = new JSONObject(nearbyString);
 
+                if (jsonObject.has("next_page_token")) {
+                    nextPage.setEnabled(true);
+                }
+
+                results = jsonObject.getJSONArray("results");
+                viewSelector(results);
+
+                pages[page] = new JSONArray();
+                for (int i = 0; i < results.length(); i++) {
+                    pages[page].put(results.getJSONObject(i));
+                }
+
+
+                mRecyclerView = (RecyclerView) findViewById(R.id.resultRecycler);
+                // use a linear layout manager
+                mLayoutManager = new LinearLayoutManager(this);
+                mRecyclerView.setLayoutManager(mLayoutManager);
+
+                // specify an adapter (see also next example)
+                mAdapter = new ResultAdapter(results, new ResultAdapterListener() {
+
+                    @Override
+                    public void iconTextViewOnClick(View v, int position) {
+                        Log.d("TEXT-CLICK", "TEXT-CLICK FROM NEARY BY ACTIVITY");
+                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                        try {
+                            intent.putExtra("PlaceDetail", results.getJSONObject(position).toString());
+                            startActivity(intent);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void iconImageViewOnClick(View v, int position) {
+                        ImageView heart = (ImageView) v.findViewById(R.id.heart);
+
+                        if (Integer.valueOf(R.drawable.icon_heart_outline_black).equals(heart.getTag())) {
+                            heart.setImageResource(R.drawable.icon_heart_fill_red);
+                            heart.setTag(Integer.valueOf(R.drawable.icon_heart_fill_red));
+                            try {
+                                Toast.makeText(getApplicationContext(),
+                                        pages[page].getJSONObject(position).getString("name") + " was added to favorites",
+                                        Toast.LENGTH_SHORT).show();
+                                FavoriteFragment.favoriteItems.put(pages[page].getJSONObject(position));
+                                FavoriteFragment.fAdapter.notifyDataSetChanged();
+                                FavoriteFragment.viewSelector();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            heart.setImageResource(R.drawable.icon_heart_outline_black);
+                            heart.setTag(Integer.valueOf(R.drawable.icon_heart_outline_black));
+                            try {
+                                Toast.makeText(getApplicationContext(),
+                                        pages[page].getJSONObject(position).getString("name") + " was removed from favorites",
+                                        Toast.LENGTH_SHORT).show();
+                                for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
+                                    if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
+                                            .equals(pages[page].getJSONObject(position).getString("place_id"))) {
+                                        FavoriteFragment.favoriteItems.remove(i);
+                                        FavoriteFragment.fAdapter.notifyDataSetChanged();
+                                        FavoriteFragment.viewSelector();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.d("LENGTH OF FAVORITE --", "" + FavoriteFragment.favoriteItems.length());
+                    }
+                });
+                mRecyclerView.setAdapter(mAdapter);
+
+
+                Log.d("results length", Integer.toString(pages[page].length()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void viewSelector(JSONArray results){
@@ -216,10 +226,13 @@ public class NearbyActivity extends AppCompatActivity {
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.d("nextPageError",error.getMessage());
+                            //Log.d("nextPageError",error.getMessage());
                             if(progress != null){
                                 progress.dismiss();
                             }
+                            Toast.makeText(NearbyActivity.this,
+                                    "ERROR: please check your network and retry",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
             queue.add(nextPageRequest);

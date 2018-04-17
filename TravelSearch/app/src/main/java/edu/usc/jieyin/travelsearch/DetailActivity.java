@@ -1,6 +1,8 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.icu.text.IDNA;
 import android.net.Uri;
@@ -80,6 +82,7 @@ public class DetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(3);
@@ -221,10 +224,13 @@ public class DetailActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("placeDetails", error.getMessage());
+                        //Log.d("placeDetails", error.getMessage());
                         if (progress != null) {
                             progress.dismiss();
                         }
+                        Toast.makeText(DetailActivity.this,
+                                "ERROR: please check your network and retry",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
         queue.add(nextPageRequest);
@@ -336,12 +342,15 @@ public class DetailActivity extends AppCompatActivity {
                             ReviewFragment reviewFrag = (ReviewFragment) adapter.getItem(3);
                             reviewFrag.getReviews(googleReview, yelpReview);
                             Log.d("ReviewLength", "GoogleReview: " + googleReview.length() + " yelpReview: " + yelpReview.length());
+                            if (progress != null) {
+                                progress.dismiss();
+                            }
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.d("placeDetails", error.getMessage());
+                            //Log.d("placeDetails", error.getMessage());
                             if (progress != null) {
                                 progress.dismiss();
                             }
@@ -358,9 +367,6 @@ public class DetailActivity extends AppCompatActivity {
             infoFrag.setInfo(placeDetails);
             PhotoFragment photoFrag = (PhotoFragment) adapter.getItem(1);
             photoFrag.setPhoto(placeID);
-            if (progress != null) {
-                progress.dismiss();
-            }
         }
 
     }

@@ -124,6 +124,9 @@ public class SearchFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getContext(),
+                        "APP requires user location, or search results may fail to be shown",
+                        Toast.LENGTH_SHORT).show();
             // Permission is not granted
             // Should we show an explanation?
             // No explanation needed; request the permission
@@ -148,6 +151,9 @@ public class SearchFragment extends Fragment {
                                 Log.d("------LOCATION-----", "fired create location request");
                                 if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                                     // TODO: Consider calling
+                                    Toast.makeText(getContext(),
+                                            "APP requires user location, or search results may fail to be shown",
+                                            Toast.LENGTH_SHORT).show();
                                     //    ActivityCompat#requestPermissions
                                     // here to request the missing permissions, and then overriding
                                     //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
