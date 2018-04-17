@@ -2,11 +2,8 @@ package edu.usc.jieyin.travelsearch;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +13,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -24,8 +22,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.JointType;
@@ -162,10 +158,12 @@ public class MapFragment extends Fragment {
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            //Log.d("routeError", error.getMessage());
-                            Toast.makeText(getContext(),
-                                    "ERROR: please check your network and retry",
-                                    Toast.LENGTH_SHORT).show();
+                            Activity activity = getActivity();
+                            if (activity != null && isAdded()) {
+                                Toast.makeText(getContext(),
+                                        "ERROR: please check your network and retry",
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
             routeRequest.setShouldCache(false);

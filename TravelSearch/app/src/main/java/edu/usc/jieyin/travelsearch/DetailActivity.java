@@ -1,10 +1,11 @@
 package edu.usc.jieyin.travelsearch;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.content.Context;
+
 import android.content.Intent;
-import android.icu.text.IDNA;
+import android.content.SharedPreferences;
+
 import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -16,13 +17,14 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
+
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -48,7 +50,6 @@ public class DetailActivity extends AppCompatActivity {
     private JSONObject placeJSON;
 
     private String placeID;
-    private boolean isFavorite = false;
     private ImageView shareButton;
     private ImageView favoriteButton;
     private DetailActivity.ViewPagerAdapter adapter;
@@ -58,6 +59,9 @@ public class DetailActivity extends AppCompatActivity {
     private String placeName;
     private String formattedAddress = "";
     private String website = "unavailable";
+
+    private SharedPreferences.Editor editor;
+    private SharedPreferences preferences;
 
 
     private int[] tabIcons = {
@@ -83,6 +87,9 @@ public class DetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        editor = DetailActivity.this.getSharedPreferences("FAVORITE", Context.MODE_PRIVATE).edit();
+        preferences = DetailActivity.this.getSharedPreferences("FAVORITE", Context.MODE_PRIVATE);
+
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(3);
@@ -98,12 +105,14 @@ public class DetailActivity extends AppCompatActivity {
             placeJSON = new JSONObject(placeString);
             placeName = placeJSON.getString("name");
             placeID = placeJSON.getString("place_id");
+            /*
             for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
                 if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id").equals(placeID)) {
                     isFavorite = true;
                     break;
                 }
             }
+            */
             setToolBar();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -123,13 +132,8 @@ public class DetailActivity extends AppCompatActivity {
         shareButton = findViewById(R.id.share);
         favoriteButton = findViewById(R.id.favoInfo);
         placeNameView.setText(placeName);
-        if (isFavorite) {
+        if (preferences.contains(placeID)) {
             favoriteButton.setImageResource(R.drawable.icon_heart_fill_white);
-            favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_fill_white));
-            ;
-        } else {
-            favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_outline_white));
-            ;
         }
     }
 
@@ -164,47 +168,30 @@ public class DetailActivity extends AppCompatActivity {
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Integer.valueOf(R.drawable.icon_heart_outline_white).equals(favoriteButton.getTag())) {
+                if (!preferences.contains(placeID)) {
                     favoriteButton.setImageResource(R.drawable.icon_heart_fill_white);
-                    favoriteButton.setTag(Integer.valueOf(R.drawable.icon_heart_fill_white));
 
                     Toast.makeText(getApplicationContext(),
                             placeName + " was added to favorites",
                             Toast.LENGTH_SHORT).show();
-                    FavoriteFragment.favoriteItems.put(placeDetails);
-                    FavoriteFragment.fAdapter.notifyDataSetChanged();
-                    FavoriteFragment.viewSelector();
+                    editor.putString(placeID, placeJSON.toString()).commit();
 
                 } else {
                     favoriteButton.setImageResource(R.drawable.icon_heart_outline_white);
-                    favoriteButton.setTag(R.drawable.icon_heart_outline_white);
-                    try {
-                        Toast.makeText(getApplicationContext(),
-                                placeName + " was removed from favorites",
-                                Toast.LENGTH_SHORT).show();
-                        for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
-                            if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
-                                    .equals(placeDetails.getString("place_id"))) {
-                                FavoriteFragment.favoriteItems.remove(i);
-                                FavoriteFragment.fAdapter.notifyDataSetChanged();
-                                FavoriteFragment.viewSelector();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    editor.remove(placeID).commit();
+                    Toast.makeText(getApplicationContext(),
+                            placeName + " was removed from favorites",
+                            Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
     }
-
 
     private void fetchDetails() {
         queue = Volley.newRequestQueue(getApplicationContext());
         String detailURL = "http://jay-cs571-hw9.us-east-2.elasticbeanstalk.com/details/?placeID=" + placeID;
         Log.d("placeDetails", detailURL);
-        StringRequest nextPageRequest = new StringRequest(Request.Method.GET, detailURL,
+        StringRequest detailsRequest = new StringRequest(Request.Method.GET, detailURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -233,7 +220,7 @@ public class DetailActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
-        queue.add(nextPageRequest);
+        queue.add(detailsRequest);
     }
 
     private void setupTabIcons() {

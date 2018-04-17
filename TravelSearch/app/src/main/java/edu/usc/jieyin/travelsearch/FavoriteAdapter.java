@@ -1,22 +1,20 @@
 package edu.usc.jieyin.travelsearch;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.squareup.picasso.Picasso;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
-    private JSONArray results;
+    private ArrayList<Map.Entry<String, JSONObject>> results;
     public static ResultAdapterListener onClickListener;
 
     // Provide a reference to the views for each data item
@@ -54,7 +52,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public FavoriteAdapter(JSONArray results, ResultAdapterListener listener) {
+    public FavoriteAdapter(ArrayList<Map.Entry<String, JSONObject>> results, ResultAdapterListener listener) {
         onClickListener = listener;
         this.results = results;
     }
@@ -81,7 +79,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (getItemCount() != 0) {
             try {
-                JSONObject placeItem = results.getJSONObject(position);
+                JSONObject placeItem = results.get(position).getValue();
 
                 holder.place.setText(placeItem.getString("name"));
                 holder.address.setText(placeItem.getString("vicinity"));
@@ -99,6 +97,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return results.length();
+        return results.size();
     }
 }

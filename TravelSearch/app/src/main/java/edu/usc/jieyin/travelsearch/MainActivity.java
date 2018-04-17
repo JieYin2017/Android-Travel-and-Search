@@ -3,23 +3,18 @@ package edu.usc.jieyin.travelsearch;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
             "SEARCH",
             "FAVORITE"
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this,
                 "Welcome",
                 Toast.LENGTH_LONG).show();
-
         setupTabIcons();
     }
 
@@ -66,8 +59,6 @@ public class MainActivity extends AppCompatActivity {
             tabContent.setCompoundDrawablesWithIntrinsicBounds(tabIcons[i], 0, 0, 0);
             tabLayout.getTabAt(i).setCustomView(tabContent);
         }
-
-
     }
 
     private void addTabs(ViewPager viewPager) {
@@ -76,8 +67,6 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFrag(new FavoriteFragment(), "FAVORITE");
         viewPager.setAdapter(adapter);
     }
-
-
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
@@ -107,6 +96,5 @@ public class MainActivity extends AppCompatActivity {
             return mFragmentTitleList.get(position);
         }
     }
-
 
 }

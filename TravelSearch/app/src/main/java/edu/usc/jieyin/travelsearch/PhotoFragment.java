@@ -1,6 +1,5 @@
 package edu.usc.jieyin.travelsearch;
 
-import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.GeoDataClient;
@@ -110,9 +108,12 @@ public class PhotoFragment extends Fragment {
             }
         });
     }
-    private float pxFromDp(float dp){
-        return dp*getResources().getDisplayMetrics().density;
+    private float pxFromDp(float dp) {
+        if (isAdded()) {
+            Log.d("metrics", "" + dp * getResources().getDisplayMetrics().density);
+            return dp * getResources().getDisplayMetrics().density;
+        }else{
+            return 918.75f;
+        }
     }
-
-
 }

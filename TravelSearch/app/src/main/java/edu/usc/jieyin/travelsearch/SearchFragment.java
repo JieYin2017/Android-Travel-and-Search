@@ -4,6 +4,7 @@ package edu.usc.jieyin.travelsearch;
  */
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,6 +27,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -81,6 +84,7 @@ public class SearchFragment extends Fragment {
         getLocation();
 
     }
+
     public void onPause() {
         super.onPause();
         if( progress != null){
@@ -108,7 +112,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
         editKeyword = (EditText) view.findViewById(R.id.keyword);
         otherLocRadio = (RadioButton) view.findViewById(R.id.fromOther);
         keywordError = (TextView) view.findViewById(R.id.keywordError);
@@ -121,6 +124,8 @@ public class SearchFragment extends Fragment {
         searchButton = view.findViewById(R.id.searchButton);
         clearButton = view.findViewById(R.id.clearButton);
         queue = Volley.newRequestQueue(getContext());
+
+        //restoreView(savedInstanceState);
 
         setSearchButton();
         setClearButton();
@@ -200,7 +205,6 @@ public class SearchFragment extends Fragment {
         };
     }
 
-
     public void nearbyQuery(String keyword, String category, int distance, String location) {
         String url = "";
         String geoLoc = currentLat + "," + currentLon;
@@ -237,11 +241,13 @@ public class SearchFragment extends Fragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        intent.putExtra("PlaceNearby", "FAILED");
-                        startActivity(intent);
+                        Activity activity = getActivity();
+                        if(activity != null && isAdded()){
+                            intent.putExtra("PlaceNearby", "FAILED");
+                            startActivity(intent);
+                        }
                     }
                 });
-
         queue.add(nearbyRequest);
     }
 
@@ -316,6 +322,7 @@ public class SearchFragment extends Fragment {
             }
         });
     }
+
     private void setAutoComplete(){
         CustomAutoCompleteAdapter adapter =  new CustomAutoCompleteAdapter(getContext());
         AdapterView.OnItemClickListener onItemClickListener =
@@ -366,9 +373,36 @@ public class SearchFragment extends Fragment {
                 });
         routeRequest.setShouldCache(false);
         queue.add(routeRequest);
-
-
     }
+
+    /*
+    public void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putString("keyword", keyword);
+        state.putInt("distance",distance);
+        state.putString("category",category);
+        state.putString("location",editLocation.getText().toString());
+    }
+
+    public void restoreView(Bundle savedInstanceState){
+        if(savedInstanceState != null){
+            editKeyword.setText(savedInstanceState.getString("keyword"));
+            editDistance.setText(savedInstanceState.getInt("distance"));
+            if(!savedInstanceState.getString("location").equals("")){
+                currentLocRadio.setChecked(false);
+                otherLocRadio.setChecked(true);
+                editLocation.setText(savedInstanceState.getString("location"));
+            }
+            for(int i= 0; i < categorySpinner.getAdapter().getCount(); i++)
+            {
+                if(categorySpinner.getAdapter().getItem(i).toString().contains(savedInstanceState.getString("category")));
+                {
+                    categorySpinner.setSelection(i);
+                }
+            }
+        }
+    }
+    */
 
 }
 

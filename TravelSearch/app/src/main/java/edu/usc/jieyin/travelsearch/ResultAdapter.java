@@ -1,5 +1,7 @@
 package edu.usc.jieyin.travelsearch;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import org.json.JSONObject;
 public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ViewHolder> {
     private JSONArray results;
     public static ResultAdapterListener onClickListener;
+    private SharedPreferences preferences;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -54,7 +57,8 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ViewHolder
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public ResultAdapter(JSONArray results, ResultAdapterListener listener) {
+    public ResultAdapter(JSONArray results, ResultAdapterListener listener, Context context) {
+        preferences = context.getSharedPreferences("FAVORITE", Context.MODE_PRIVATE);
         onClickListener = listener;
         this.results = results;
     }
@@ -87,18 +91,23 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ViewHolder
                 holder.place.setText(placeItem.getString("name"));
                 holder.address.setText(placeItem.getString("vicinity"));
                 boolean isFavorite = false;
+
+                if (preferences.contains(placeItem.getString("place_id"))){
+                    isFavorite = true;
+                }
+
+                /*
                 for (int i = 0; i < FavoriteFragment.favoriteItems.length(); i++) {
                     if (FavoriteFragment.favoriteItems.getJSONObject(i).getString("place_id")
                             .equals(placeItem.getString("place_id"))) {
                         isFavorite = true;
                     }
                 }
+                */
                 if (!isFavorite) {
                     holder.heart.setImageResource(R.drawable.icon_heart_outline_black);
-                    holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_outline_black));
                 } else {
                     holder.heart.setImageResource(R.drawable.icon_heart_fill_red);
-                    holder.heart.setTag(Integer.valueOf(R.drawable.icon_heart_fill_red));
                 }
 
                 Picasso.get().load(placeItem.getString("icon")).fit().into(holder.category);
