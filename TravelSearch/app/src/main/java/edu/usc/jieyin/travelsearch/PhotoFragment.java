@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.PlacePhotoMetadata;
@@ -19,6 +20,7 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResponse;
 import com.google.android.gms.location.places.PlacePhotoResponse;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
@@ -89,10 +91,18 @@ public class PhotoFragment extends Fragment {
                             Bitmap resize = Bitmap.createScaledBitmap(bitmap, (int) pxFromDp(350), (int) scaledHeight,true);
                             photoList.add(resize);
                             if(photoList.size() == photoMetadataBuffer.getCount()){
-                                Log.d("RecyclerView","notifyDatasetchange");
-                                Log.d("RecyclerView","Length of photos" + photoList.size());
+                                Log.d("PhotoRecyclerView","notifyDatasetchange");
+                                Log.d("PhotoRecyclerView","Length of photos" + photoList.size());
                                 mAdapter.notifyDataSetChanged();
                             }
+                        }
+                    });
+                    photoResponse.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getContext(),
+                                    "Error: failed to get photos",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
