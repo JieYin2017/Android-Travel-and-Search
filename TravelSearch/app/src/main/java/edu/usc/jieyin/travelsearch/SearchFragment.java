@@ -41,6 +41,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -60,6 +63,10 @@ public class SearchFragment extends Fragment {
     private RadioButton otherLocRadio, currentLocRadio;
     private Button searchButton, clearButton;
     private Spinner categorySpinner;
+    private RequestQueue queue;
+
+    private String keyword,category;
+    private int distance;
 
 
     public SearchFragment() {
@@ -113,6 +120,7 @@ public class SearchFragment extends Fragment {
 
         searchButton = view.findViewById(R.id.searchButton);
         clearButton = view.findViewById(R.id.clearButton);
+        queue = Volley.newRequestQueue(getContext());
 
         setSearchButton();
         setClearButton();
@@ -194,7 +202,6 @@ public class SearchFragment extends Fragment {
 
 
     public void nearbyQuery(String keyword, String category, int distance, String location) {
-        RequestQueue queue = Volley.newRequestQueue(getContext());
         String url = "";
         String geoLoc = currentLat + "," + currentLon;
 
@@ -244,7 +251,7 @@ public class SearchFragment extends Fragment {
             public void onClick(View v) {
                 boolean isValidForm = false;
 
-                String keyword = editKeyword.getText().toString();
+                keyword = editKeyword.getText().toString();
                 String location = editLocation.getText().toString();
 
                 if (!keyword.matches("\\s*\\S+.*")) {
@@ -267,9 +274,7 @@ public class SearchFragment extends Fragment {
                     }
                 }
                 if (isValidForm) {
-                    int distance;
-                    String category = categorySpinner.getSelectedItem().toString();
-
+                    category = categorySpinner.getSelectedItem().toString();
                     if (editDistance.getText().toString().equals("")) {
                         distance = 10;
                     } else {
@@ -282,7 +287,11 @@ public class SearchFragment extends Fragment {
                     progress.setProgress(0);
                     progress.show();
                     if (!otherLocRadio.isChecked()) {
-                        nearbyQuery(keyword, category, distance, "");
+                        if(currentLat == 0){
+                            setLocByWebService();
+                        }else{
+                            nearbyQuery(keyword, category, distance, "");
+                        }
                     } else {
                         nearbyQuery(keyword, category, distance, location);
                     }
@@ -290,8 +299,6 @@ public class SearchFragment extends Fragment {
 
             }
         });
-
-
     }
 
     private void setClearButton(){
@@ -327,6 +334,40 @@ public class SearchFragment extends Fragment {
                 };
         editLocation.setAdapter(adapter);
         editLocation.setOnItemClickListener(onItemClickListener);
+    }
+
+    private void setLocByWebService(){
+        String ipURL = "http://ip-api.com/json";
+        StringRequest routeRequest = new StringRequest(Request.Method.GET, ipURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject ipObject = new JSONObject(response);
+                            currentLat = ipObject.getDouble("lat");
+                            currentLon = ipObject.getDouble("lon");
+                            nearbyQuery(keyword, category, distance, "");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getContext(),
+                                    "ERROR: failed to get user location",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //Log.d("routeError", error.getMessage());
+                        Toast.makeText(getContext(),
+                                "ERROR: failed to get user location",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+        routeRequest.setShouldCache(false);
+        queue.add(routeRequest);
+
+
     }
 
 }
